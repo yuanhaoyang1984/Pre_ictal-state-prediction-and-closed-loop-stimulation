@@ -1,0 +1,119 @@
+function doOnNewSamples(newTicks)
+%To debug thus function, set a breakpoint in it and call it manually
+%from the MATLAB command line after sampling has been stopped.
+%Example event handler called when sampling, whenever new samples might be 
+%available, typically 20 times a second.
+%This example gets any new samples from channel gChan, appends them to
+%the gChan1Data vector, then plots the latest 5000 samples.
+global gLCDoc;
+global gLatestBlock;
+global gBlockSecsPerTick;
+global gLatestTickInBlock;
+global gChans;
+global gChansData;
+global gT;
+global Sampling_Frequency;
+global Signal_Type
+global threshold_value
+global mediator
+global st
+global drug_flag
+global drug_time_start
+
+%disp('OnNewSamples called')
+gLatestTickInBlock = gLatestTickInBlock+newTicks;
+% HRESULT GetChannelData([in]ChannelDataFlags flags, [in]long channelNumber, [in]long blockNumber, [in]long startSample, [in]long numSamples, [out,retval]VARIANT *data) const;
+% For the sampling case we can pass -1 for the number of samples parameter,
+% meaning return all available samples
+newSamplesMax = 0; %max new samples added across channels
+minChanLength = 1e30; %number of samples in the shortest channel
+
+slot = 1;
+for ch = gChans
+% HRESULT GetChannelData([in]ChannelDataFlags flags, [in]long channelNumber, [in]long blockNumber, [in]long startSample, [in]long numSamples, [out,retval]VARIANT *data) const;
+% For the sampling case we can pass -1 for the number of samples parameter,
+% meaning return all available samples
+    chanSamples = gLCDoc.GetChannelData (1, ch, gLatestBlock+1, length(gChansData{slot})+1, -1);
+    gChansData{slot} = [gChansData{slot}; chanSamples'];
+    if minChanLength > length(gChansData{slot})
+        minChanLength = length(gChansData{slot});
+    end
+    if newSamplesMax < length(chanSamples)
+        newSamplesMax = length(chanSamples);
+    end
+    slot = slot+1;
+end
+
+if newSamplesMax > 0
+    nSamples = length(gT);
+    gT = [gT; [nSamples:nSamples+newSamplesMax-1]'*gBlockSecsPerTick];
+end
+
+%plot the latest 5000 samples
+plotRange = max(1,minChanLength-5*60*Sampling_Frequency):minChanLength;
+slot = 1;
+if Signal_Type == 'EEG'
+    for ch = gChans
+%         subplot(length(gChans),1,slot), plot(gT(plotRange),gChansData{slot}(plotRange));
+        [Pai_Val,status] = Model_Predict_EEG(gChansData{slot}(plotRange), threshold_value)
+        channelStr = ['Channel ' int2str(ch)];
+%         title(channelStr);        
+        slot = slot+1;
+        if status == 1 & mediator == 'elec'
+            stimulator_paramenters.Baseline = 0;
+            stimulator_paramenters.StartDelay = 0; %s
+            stimulator_paramenters.NRepeat = 1; %Times,-1 for numerous
+            stimulator_paramenters.MaxiumPulseRate = 10; %Hz
+            stimulator_paramenters.PulseAmplitude = 5; % v
+            stimulator_paramenters.PulseWidth = 1 %ms
+            stimulator_paramenters.SyncChan = 1;
+            elec_stimulator_start(stimulator_paramenters);
+        end
+        if mediator == 'drug'
+            if drug_flag == 1
+                time_now = clock;
+                diftime = time_now-drug_time_start;
+                if diftime(5)*60+diftime(6)>10
+                    drug_flag = 0;
+                end
+            end
+            if drug_flag == 0 
+                stimu_drug(status);
+            end
+
+        end
+
+    end
+end
+if Signal_Type == 'ECG'
+    for ch = gChans
+        subplot(length(gChans),1,slot), plot(gT(plotRange),gChansData{slot}(plotRange));
+        [Pai_Val,status] = Model_Predict_ECG(gChansData{slot}(plotRange), threshold_value)
+        channelStr = ['Channel ' int2str(ch)];
+        title(channelStr);
+        slot = slot+1;
+        if status == 1 & mediator == 'elec'
+            stimulator_paramenters.Baseline = 0;
+            stimulator_paramenters.StartDelay = 0; %s
+            stimulator_paramenters.NRepeat = 1; %Times,-1 for numerous
+            stimulator_paramenters.MaxiumPulseRate = 10; %Hz
+            stimulator_paramenters.PulseAmplitude = 5; % v
+            stimulator_paramenters.PulseWidth = 1 %ms
+            stimulator_paramenters.SyncChan = 1;
+            elec_stimulator_start(stimulator_paramenters);
+        end
+        if mediator == 'drug'
+            if drug_flag == 1
+                time_now = clock;
+                diftime = time_now-drug_time_start;
+                if diftime(5)*60+diftime(6)>10
+                    drug_flag = 0;
+                end
+            end
+            if drug_flag == 0 
+                stimu_drug(status)
+            end
+
+        end
+    end
+end
