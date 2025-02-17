@@ -1,4 +1,4 @@
- This repository is for the publication of NN-A87554. edited by Haoyang Yuan(h.yuan24@imperial.ac.uk) in Han&Lu Lab(Fenghan169@njmu.edu.cn)
+ This repository is for the publication and peer-review. edited by Haoyang Yuan(h.yuan24@imperial.ac.uk/yuanhaoyang1984@gmail.com) in Han&Lu Lab(Fenghan169@njmu.edu.cn)
  
  The main code is for closed-loop stimulation of epileptic mice based on Labchart recording system.
  
