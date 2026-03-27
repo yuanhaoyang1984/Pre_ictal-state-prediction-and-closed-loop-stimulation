@@ -3,6 +3,15 @@
  The main code is for closed-loop stimulation of epileptic mice based on Labchart recording system.
  
  Besides the packages we uploaded, the repository needs another package named PACmeg to run. Here is the link for the package(https://github.com/neurofractal/PACmeg).
+ 
+Pre-ictal state detection 
+
+We provide example demos and expected outputs in the demo folder.
+To run the code, execute the relevant script and select the demo folder within the repository. This will generate a model along with prediction and decoding accuracy results.
+
+Closed-loop stimulation system
+
+I.Background information 
 
 1.1 Purpose
 
