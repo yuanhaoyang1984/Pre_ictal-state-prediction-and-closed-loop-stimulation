@@ -6,7 +6,7 @@
  
 Pre-ictal state detection 
 
-  We provide example demos and expected outputs in the demo folder.
+  We provide example demos in the Google Drive(https://drive.google.com/drive/folders/1XlYl6ySYrMfY0eefCJi440Z9ee3dkID9?usp=sharing) and expected outputs in the demo folder.
   To run the code, execute the relevant script and select the demo folder within the repository. This will generate a model along with prediction and decoding accuracy results.
 
 Closed-loop stimulation system
